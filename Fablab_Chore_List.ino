@@ -27,9 +27,9 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // Kontakternes pins (skal ændres til de faktiske GPIO pins du bruger)
 // Pin  K Farve   Kontakt
 //  2   2 Grå2    0
-//  4   2 Lilla2  1
-//  5   2 Blå     2
-//  18  2 Grøn    3
+//  4   2 Lilla2  1 (Tænder både 1 og 3) tyder på forbindelse med naboledning
+//  5   2 Blå     2 (Tænder både 2 og 4) tyder på forbindelse med naboledning
+//  18  2 Grøn    3 
 //  19  2 Gul     4
 //  21  2 Orange  5
 //  22  2 Rød     6
@@ -38,7 +38,7 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 //  26  2 Hvid    9
 //  27  2 Grå1    10
 //
-//  32  1 Sort2   11
+//  32  1 Sort2   11 (Virker ikke) pin eller kabel, fejl ikke fundet endnu
 //  33  1 Hvid2   12
 //  12  1 Grå     13
 //  13  1 Lilla   14
@@ -47,8 +47,19 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 const int switchPins[15] = {2, 4, 5, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 12, 13}; // Eksempel på GPIO numre
 bool lastSwitchStates[15] = {false};
 
-const int skiftHour = 19;
-const int skiftMinute = 00;
+const int skiftHour   = 21;
+const int skiftMinute = 35;
+const int skiftSekund = 0;
+
+int ledTest = 1; //Hvis 1 laver den test af LED'erne ved opstart, hvis 0 gør den ikke
+
+
+//  .___________. __    __   _______         _______. _______ .___________. __    __  .______   
+//  |           ||  |  |  | |   ____|       /       ||   ____||           ||  |  |  | |   _  \  
+//  `---|  |----`|  |__|  | |  |__         |   (----`|  |__   `---|  |----`|  |  |  | |  |_)  | 
+//      |  |     |   __   | |   __|         \   \    |   __|      |  |     |  |  |  | |   ___/  
+//      |  |     |  |  |  | |  |____    .----)   |   |  |____     |  |     |  `--'  | |  |      
+//      |__|     |__|  |__| |_______|   |_______/    |_______|    |__|      \______/  | _|      
 
 void setup() {
 //Start seriel forbindelse
@@ -57,6 +68,7 @@ Serial.begin(115200);
   // Initialiserer LED strip og strip test
   strip.begin();
 
+if (ledTest == 0) {
     for (int i = 0; i < LED_COUNT; i++) {
       strip.setPixelColor(i, strip.Color(random(5,10), random(1,5), random(10,15))); // Slukket
       Serial.print(i);
@@ -64,16 +76,18 @@ Serial.begin(115200);
       strip.show();
       delay(200);
     }
-delay(5000);
+delay(2000);
 
     strip.begin();
     for (int i = 0; i < LED_COUNT; i++) {
       strip.setPixelColor(i, strip.Color(0, 0, 0)); // Slukket
       Serial.print(i);
       Serial.println(" LED SLUKKET");
+      strip.show();
+      delay(200);
     }
-  strip.show();
-delay(5000);
+delay(2000);
+}
 
 // Forbinder til Wi-Fi
   WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE);
@@ -98,6 +112,14 @@ for (int i = 0; i < 15; i++) {
 
 }
 
+
+//  .___________. __    __   _______     __        ______     ______   .______   
+//  |           ||  |  |  | |   ____|   |  |      /  __  \   /  __  \  |   _  \  
+//  `---|  |----`|  |__|  | |  |__      |  |     |  |  |  | |  |  |  | |  |_)  | 
+//      |  |     |   __   | |   __|     |  |     |  |  |  | |  |  |  | |   ___/  
+//      |  |     |  |  |  | |  |____    |  `----.|  `--'  | |  `--'  | |  |      
+//      |__|     |__|  |__| |_______|   |_______| \______/   \______/  | _|      
+
 void loop() {
   //Hent aktuel tid
   timeClient.update();
@@ -107,12 +129,13 @@ void loop() {
   //Aflæs hentet id og sæt hour til timetallet
   int hour = ptm->tm_hour;
   int minute = ptm->tm_min;
+  int second = ptm->tm_sec;
 
   //Skift til LED'erne til rød vil kun ske når timerne er 7 om minutterne 00
   static bool updatedRed = false;
-  if (hour == skiftHour && minute == skiftMinute && !updatedRed) {
+  if (hour == skiftHour && minute == skiftMinute && second == skiftSekund && !updatedRed) {
     for (int i = 0; i < LED_COUNT; i++) {
-      strip.setPixelColor(i, strip.Color(255, 0, 0)); // Rød
+      strip.setPixelColor(i, strip.Color(100, 0, 0)); // Rød
       Serial.print("LED ");
       Serial.print(i);
       Serial.println(" Rød");
@@ -132,8 +155,8 @@ void loop() {
 
     if (currentSwitchState != lastSwitchStates[i] && currentSwitchState == LOW) {
       lastSwitchStates[i] = currentSwitchState;
-      if (!(hour == skiftHour && minute == skiftMinute)) {
-        strip.setPixelColor(LED_COUNT-i-1, strip.Color(0, 255, 0)); // Grøn
+      if (!(hour == skiftHour && minute == skiftMinute && second == skiftSekund)) {
+        strip.setPixelColor(LED_COUNT-i-1, strip.Color(0, 100, 0)); // Grøn
         strip.show();
         Serial.print(hour);
         Serial.print(":");
