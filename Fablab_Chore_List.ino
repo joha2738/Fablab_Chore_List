@@ -1,7 +1,7 @@
 /*
 WIFI                virker
 Hent tid            virker
-Skift på kontakter  virker ikke
+Skift på kontakter  virker delvis
 
 */
 
