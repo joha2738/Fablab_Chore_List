@@ -1,7 +1,7 @@
 /*
 WIFI                virker
 Hent tid            virker
-Skift på kontakter  virker delvis
+Skift på kontakter  virker ikke
 
 */
 
@@ -47,7 +47,8 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 const int switchPins[15] = {2, 4, 5, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35}; // Eksempel på GPIO numre
 bool lastSwitchStates[15] = {false};
 
-
+const int skiftHour = 19;
+const int skiftMinute = 00;
 
 void setup() {
 //Start seriel forbindelse
@@ -68,8 +69,9 @@ Serial.begin(115200);
 
   // Initialiserer LED strip
   strip.begin();
-  for (int i = 0; i < LED_COUNT; i++) {
-      strip.setPixelColor(i, strip.Color(0, 0, 0)); // Rød
+    for (int i = 0; i < LED_COUNT; i++) {
+      strip.setPixelColor(i, strip.Color(0, 0, 0)); // Slukket
+      Serial.print("LED SLUKKET "+i);
     }
   strip.show();
 
@@ -93,41 +95,44 @@ void loop() {
 
   //Skift til LED'erne til rød vil kun ske når timerne er 7 om minutterne 00
   static bool updatedRed = false;
-  if (hour == 7 && minute == 0 && !updatedRed) {
+  if (hour == skiftHour && minute == skiftMinute && !updatedRed) {
     for (int i = 0; i < LED_COUNT; i++) {
       strip.setPixelColor(i, strip.Color(255, 0, 0)); // Rød
+      Serial.print("LED ");
+      Serial.print(i);
+      Serial.println(" Rød");
     }
     strip.show();
     updatedRed = true;
-  } else if (hour != 7 || minute != 0) {
+  } else if (hour != skiftHour || minute != skiftMinute) {
     updatedRed = false;
   }
 
-  // Tænder alle LED'er røde kl. 7
-  if (hour == 7 && minute == 0) {
-    for (int i = 0; i < LED_COUNT; i++) {
-      strip.setPixelColor(i, strip.Color(255, 0, 0)); // Rød
-    }
-    strip.show();
-  }
+
 
 // Kontrollerer om kontakterne har skiftet posistion og ændre den tilhørende LED's farve
-  for (int i = 0; i < 15; i++) {
+  for (int i = 0; i < LED_COUNT; i++) {
     bool currentSwitchState = digitalRead(switchPins[i]);
-    int ledIndex = i == 0 ? LED_COUNT - 1 : i - 1; // Mapper første kontakt til sidste LED, resten 1-til-1
+    //int ledIndex = i == 0 ? LED_COUNT - 1 : i - 1; // Mapper første kontakt til sidste LED, resten 1-til-1
 
-    if (currentSwitchState != lastSwitchStates[i] && currentSwitchState == HIGH) {
+    if (currentSwitchState != lastSwitchStates[i] && currentSwitchState == LOW) {
       lastSwitchStates[i] = currentSwitchState;
-      if (!(hour == 7 && minute == 0)) {
-        strip.setPixelColor(ledIndex, strip.Color(0, 255, 0)); // Grøn
+      if (!(hour == skiftHour && minute == skiftMinute)) {
+        strip.setPixelColor(LED_COUNT-i-1, strip.Color(0, 255, 0)); // Grøn
         strip.show();
+        Serial.print(hour);
+        Serial.print(":");
+        Serial.print(minute);
+        Serial.print(" - LED ");
+        Serial.print(i);
+        Serial.println(" Grøn");
       }
     } else {
       lastSwitchStates[i] = currentSwitchState;
     }
   }
 
-  delay(1000);
+  delay(100);
 
  /* 
  
