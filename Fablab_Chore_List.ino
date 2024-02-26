@@ -26,25 +26,25 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 // Kontakternes pins (skal ændres til de faktiske GPIO pins du bruger)
 // Pin  K Farve   Kontakt
-//  2   2 Grå2    1
-//  4   2 Lilla2  2
-//  5   2 Blå     3
-//  18  2 Grøn    4
-//  19  2 Gul     5
-//  21  2 Orange  6
-//  22  2 Rød     7
-//  23  2 Brun    8
-//  25  2 Sort    9
-//  26  2 Hvid    10
-//  27  2 Grå1    11
+//  2   2 Grå2    0
+//  4   2 Lilla2  1
+//  5   2 Blå     2
+//  18  2 Grøn    3
+//  19  2 Gul     4
+//  21  2 Orange  5
+//  22  2 Rød     6
+//  23  2 Brun    7
+//  25  2 Sort    8
+//  26  2 Hvid    9
+//  27  2 Grå1    10
 //
-//  32  1 Sort2   12
-//  33  1 Hvid2   13
-//  34  1 Grå     14
-//  35  1 Lilla   15
+//  32  1 Sort2   11
+//  33  1 Hvid2   12
+//  12  1 Grå     13
+//  13  1 Lilla   14
 
 
-const int switchPins[15] = {2, 4, 5, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35}; // Eksempel på GPIO numre
+const int switchPins[15] = {2, 4, 5, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 12, 13}; // Eksempel på GPIO numre
 bool lastSwitchStates[15] = {false};
 
 const int skiftHour = 19;
@@ -53,6 +53,27 @@ const int skiftMinute = 00;
 void setup() {
 //Start seriel forbindelse
 Serial.begin(115200);
+
+  // Initialiserer LED strip og strip test
+  strip.begin();
+
+    for (int i = 0; i < LED_COUNT; i++) {
+      strip.setPixelColor(i, strip.Color(random(5,10), random(1,5), random(10,15))); // Slukket
+      Serial.print(i);
+      Serial.println(" LED Tændt ");
+      strip.show();
+      delay(200);
+    }
+delay(5000);
+
+    strip.begin();
+    for (int i = 0; i < LED_COUNT; i++) {
+      strip.setPixelColor(i, strip.Color(0, 0, 0)); // Slukket
+      Serial.print(i);
+      Serial.println(" LED SLUKKET");
+    }
+  strip.show();
+delay(5000);
 
 // Forbinder til Wi-Fi
   WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE);
@@ -67,13 +88,7 @@ Serial.begin(115200);
   // Starter NTP Client
   timeClient.begin();
 
-  // Initialiserer LED strip
-  strip.begin();
-    for (int i = 0; i < LED_COUNT; i++) {
-      strip.setPixelColor(i, strip.Color(0, 0, 0)); // Slukket
-      Serial.print("LED SLUKKET "+i);
-    }
-  strip.show();
+
 
  // Initialiserer kontakternes pins som input
 for (int i = 0; i < 15; i++) {
