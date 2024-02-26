@@ -101,7 +101,7 @@ void loop() {
   }
 
   // Tænder alle LED'er røde kl. 7
-  if (hour == 7) {
+  if (hour == 7 && minute == 0) {
     for (int i = 0; i < LED_COUNT; i++) {
       strip.setPixelColor(i, strip.Color(255, 0, 0)); // Rød
     }
