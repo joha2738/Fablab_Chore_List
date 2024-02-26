@@ -68,6 +68,9 @@ Serial.begin(115200);
 
   // Initialiserer LED strip
   strip.begin();
+  for (int i = 0; i < LED_COUNT; i++) {
+      strip.setPixelColor(i, strip.Color(0, 0, 0)); // Rød
+    }
   strip.show();
 
  // Initialiserer kontakternes pins som input
